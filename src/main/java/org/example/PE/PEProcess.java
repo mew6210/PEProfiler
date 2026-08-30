@@ -2,6 +2,7 @@ package org.example.PE;
 
 
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 
 public class PEProcess implements AutoCloseable {
@@ -9,8 +10,15 @@ public class PEProcess implements AutoCloseable {
     private Process process;
 
     public PEProcess(String PEPath){
-        //TODO: CHECK PATH
-        this.pathToPE = Path.of(PEPath);
+        try{
+            this.pathToPE=Path.of(PEPath);
+        } catch (RuntimeException e) {
+            throw new IllegalArgumentException("Invalid path: "+PEPath);
+        }
+
+        if(!Files.isRegularFile(this.pathToPE)) {
+            throw new IllegalArgumentException("Executable does not exist at this path: " + this.pathToPE);
+        }
     }
 
     public void open() throws IOException {
