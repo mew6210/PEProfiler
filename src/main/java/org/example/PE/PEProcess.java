@@ -1,6 +1,8 @@
 package org.example.PE;
 
 
+import java.awt.*;
+import java.awt.event.KeyEvent;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -40,6 +42,15 @@ public class PEProcess implements AutoCloseable {
         if(process != null && process.isAlive())
             process.destroy();
         System.out.println("Process closed");
+    }
+
+    public void pressPreviousScreenshot() throws AWTException{
+        Robot robot = new Robot();
+        robot.keyPress(KeyEvent.VK_ALT);
+        robot.keyPress(KeyEvent.VK_X);
+
+        robot.keyRelease(KeyEvent.VK_ALT);
+        robot.keyRelease(KeyEvent.VK_X);
     }
 
 }
