@@ -16,7 +16,14 @@ public class Main {
             proc.open();
             Thread.sleep(2000);
             proc.pressPreviousScreenshot();
-            Thread.sleep(2000);
+            Thread.sleep(7000);
+            var events = proc.getEvents();
+            for(var event : events){
+                System.out.println("Event id: "+event.id()+ " Event items: ");
+                for(var item: event.items()){
+                    System.out.print(item+" ");
+                }
+            }
         }
         catch(IOException IOe){
             IOe.printStackTrace();
