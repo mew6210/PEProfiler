@@ -2,6 +2,7 @@ package org.example;
 
 import org.example.PE.PEProcess;
 
+import java.awt.*;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -13,9 +14,21 @@ public class Main {
 
         try(PEProcess proc = new PEProcess(pathToPE())){
             proc.open();
+            Thread.sleep(2000);
+            proc.pressPreviousScreenshot();
+            Thread.sleep(2000);
+            var events = proc.getEvents();
+            for(var event : events){
+                System.out.println("Event id: "+event.id()+ " Event items: ");
+                for(var item: event.items()){
+                    System.out.print(item+" ");
+                }
+            }
         }
         catch(IOException IOe){
             IOe.printStackTrace();
+        } catch (InterruptedException | AWTException e) {
+            throw new RuntimeException(e);
         }
 
 
