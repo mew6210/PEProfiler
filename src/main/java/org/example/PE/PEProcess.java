@@ -8,13 +8,13 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 public class PEProcess implements AutoCloseable {
     private final Path pathToPE;
     private Process process;
-    private List<ReadEvent> events = new CopyOnWriteArrayList<>();
+    private List<ReadEvent> events = Collections.synchronizedList(new ArrayList<>());
 
     public PEProcess(String PEPath){
         try{
@@ -103,5 +103,4 @@ public class PEProcess implements AutoCloseable {
     public List<ReadEvent> getEvents(){
         return List.copyOf(events);
     }
-
 }
