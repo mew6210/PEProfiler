@@ -16,6 +16,7 @@ public class PEProcess implements AutoCloseable {
     private Process process;
     private List<ReadEvent> events = Collections.synchronizedList(new ArrayList<>());
     private volatile Path currentlyReadFile;
+    private volatile boolean isReadyToRead = false;
 
     public PEProcess(String PEPath){
         try{
@@ -43,6 +44,7 @@ public class PEProcess implements AutoCloseable {
         process = pb.start();
         outputThread.start();
         System.out.println("Process opened");
+        isReadyToRead = true;
     }
 
     @Override
@@ -53,6 +55,7 @@ public class PEProcess implements AutoCloseable {
     }
 
     public void pressPreviousScreenshot(Path expectedFile) throws AWTException{
+        isReadyToRead = false;
         this.currentlyReadFile = expectedFile;
         Robot robot = new Robot();
         robot.keyPress(KeyEvent.VK_ALT);
@@ -66,15 +69,20 @@ public class PEProcess implements AutoCloseable {
         Integer id = 1;
         ArrayList<String> items = new ArrayList<>();
         ArrayList<EventTimestamp> timestamps = new ArrayList<>();
+        char currentItemCount = '4';
 
         try(BufferedReader reader = process.inputReader()){
             String line;
             while((line = reader.readLine())!=null){
                 System.out.println(line);
 
+                if(line.startsWith("reading items for count ")){
+                      currentItemCount = line.charAt(line.length() -1);
+                }
+
                 if(line.startsWith("Reading result: ")){
                     String itemName = line.substring(line.indexOf(":")+2);
-                    items.add(itemName);
+                    items.add(currentItemCount + ":" + itemName);
                 }
 
                 if(line.startsWith("[") &&
@@ -82,6 +90,13 @@ public class PEProcess implements AutoCloseable {
                     Integer ms = Integer.parseInt(line.substring(1,line.indexOf("ms")));
                     String eventName = line.substring(line.indexOf("]")+2);
                     timestamps.add(new EventTimestamp(eventName,ms));
+                }
+                if(line.startsWith("[+] Successfully copied prices to clipboard, avalible to paste them in the chat with ctrl + v")){
+                    isReadyToRead = true;
+                }
+
+                if(line.startsWith("[+] Successfully initialized tesseract")){
+                    isReadyToRead = true;
                 }
 
                 if(line.startsWith("Item prices:")){
@@ -101,6 +116,10 @@ public class PEProcess implements AutoCloseable {
         }catch(IOException exc){
             exc.printStackTrace();
         }
+    }
+
+    public boolean isReady(){
+        return isReadyToRead;
     }
 
     public List<ReadEvent> getEvents(){

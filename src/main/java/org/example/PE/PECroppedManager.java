@@ -10,7 +10,6 @@ import java.util.List;
 
 public class PECroppedManager implements PEManager,AutoCloseable {
     PEProcess process;
-    private static final int READ_SCREENSHOT_MS_COOLDOWN = 5000;
 
     public PECroppedManager(PEProcess process){
         this.process = process;
@@ -57,9 +56,10 @@ public class PECroppedManager implements PEManager,AutoCloseable {
 
     void readScreenshot(Path screenshot) {
         try {
+            while(!process.isReady()) Thread.sleep(100);
+            Thread.sleep(200);
             Path target = process.pathToPE.getParent().resolve("screenshot.bmp");
             Files.copy(screenshot,target, StandardCopyOption.REPLACE_EXISTING);
-            Thread.sleep(READ_SCREENSHOT_MS_COOLDOWN);
             process.pressPreviousScreenshot(screenshot);
         } catch (IOException | InterruptedException | AWTException e) {
             System.out.println("Failure on reading a screenshot, adding a errorish event."+e.getMessage());
