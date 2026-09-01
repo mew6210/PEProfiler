@@ -47,6 +47,11 @@ public class PECroppedManager implements PEManager,AutoCloseable {
 
     @Override
     public List<ReadEvent> getData() {
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
         return process.getEvents();
     }
 
@@ -55,9 +60,10 @@ public class PECroppedManager implements PEManager,AutoCloseable {
             Path target = process.pathToPE.getParent().resolve("screenshot.bmp");
             Files.copy(screenshot,target, StandardCopyOption.REPLACE_EXISTING);
             Thread.sleep(READ_SCREENSHOT_MS_COOLDOWN);
-            process.pressPreviousScreenshot();
+            process.pressPreviousScreenshot(screenshot);
         } catch (IOException | InterruptedException | AWTException e) {
-            process.addErrorEvent();
+            System.out.println("Failure on reading a screenshot, adding a errorish event."+e.getMessage());
+            process.addErrorEvent(screenshot);
         }
     }
 

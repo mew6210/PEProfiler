@@ -15,6 +15,7 @@ public class PEProcess implements AutoCloseable {
     public final Path pathToPE;
     private Process process;
     private List<ReadEvent> events = Collections.synchronizedList(new ArrayList<>());
+    private volatile Path currentlyReadFile;
 
     public PEProcess(String PEPath){
         try{
@@ -51,7 +52,8 @@ public class PEProcess implements AutoCloseable {
         System.out.println("Process closed");
     }
 
-    public void pressPreviousScreenshot() throws AWTException{
+    public void pressPreviousScreenshot(Path expectedFile) throws AWTException{
+        this.currentlyReadFile = expectedFile;
         Robot robot = new Robot();
         robot.keyPress(KeyEvent.VK_ALT);
         robot.keyPress(KeyEvent.VK_X);
@@ -87,7 +89,8 @@ public class PEProcess implements AutoCloseable {
                             new ReadEvent(
                                     id,
                                     new ArrayList<>(timestamps),
-                                    new ArrayList<>(items)
+                                    new ArrayList<>(items),
+                                    currentlyReadFile
                             ));
                     timestamps.clear();
                     items.clear();
@@ -104,7 +107,7 @@ public class PEProcess implements AutoCloseable {
         return List.copyOf(events);
     }
 
-    public void addErrorEvent(){
-        events.add(new ReadEvent(-1,null,null));
+    public void addErrorEvent(Path screenshot){
+        events.add(new ReadEvent(-1,null,null,screenshot));
     }
 }
