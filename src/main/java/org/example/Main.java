@@ -22,7 +22,6 @@ public class Main {
             var data = manager.getData();
         }
 
-
     }
 
     static String pathToPE(){

@@ -103,4 +103,8 @@ public class PEProcess implements AutoCloseable {
     public List<ReadEvent> getEvents(){
         return List.copyOf(events);
     }
+
+    public void addErrorEvent(){
+        events.add(new ReadEvent(-1,null,null));
+    }
 }

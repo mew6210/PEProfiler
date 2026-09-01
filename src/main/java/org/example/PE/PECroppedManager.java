@@ -25,18 +25,24 @@ public class PECroppedManager implements PEManager,AutoCloseable {
     @Override
     public void readCollection(int collectionIndex) {
         Path collection = Paths.get("collections/"+collectionIndex);
-        if(!Files.exists(collection) || !Files.isDirectory(collection)) throw new IllegalStateException("No such collection exists: "+collectionIndex);
+        if(!Files.isDirectory(collection)) throw new IllegalStateException("No such collection exists: "+collectionIndex);
 
-        List<Path> screenshotFiles = new ArrayList<>();
-        try(DirectoryStream<Path> files = Files.newDirectoryStream(collection)){
-            for(Path file: files){
-                screenshotFiles.add(file);
-            }
-        } catch(IOException ioe){
-            throw new IllegalStateException("could not open directory stream");
-        }
+        List<Path> screenshotFiles = getFilesFromCollection(collection);
+
         screenshotFiles.sort(Comparator.comparing(Path::getFileName));
         screenshotFiles.forEach(this::readScreenshot);
+    }
+
+    private List<Path> getFilesFromCollection(Path collection){
+        List<Path> filesCollection = new ArrayList<>();
+        try(DirectoryStream<Path> files = Files.newDirectoryStream(collection)){
+            for(Path file: files){
+                filesCollection.add(file);
+            }
+        } catch(IOException ioe){
+            throw new IllegalStateException("could not open collection: "+ collection,ioe);
+        }
+        return filesCollection;
     }
 
     @Override
@@ -45,17 +51,14 @@ public class PECroppedManager implements PEManager,AutoCloseable {
     }
 
     void readScreenshot(Path screenshot) {
-
         try {
             Path target = process.pathToPE.getParent().resolve("screenshot.bmp");
             Files.copy(screenshot,target, StandardCopyOption.REPLACE_EXISTING);
             Thread.sleep(READ_SCREENSHOT_MS_COOLDOWN);
             process.pressPreviousScreenshot();
         } catch (IOException | InterruptedException | AWTException e) {
-            throw new RuntimeException(e);
+            process.addErrorEvent();
         }
-
-
     }
 
     @Override
