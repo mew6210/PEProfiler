@@ -12,7 +12,7 @@ import java.util.Collections;
 import java.util.List;
 
 public class PEProcess implements AutoCloseable {
-    private final Path pathToPE;
+    public final Path pathToPE;
     private Process process;
     private List<ReadEvent> events = Collections.synchronizedList(new ArrayList<>());
 
