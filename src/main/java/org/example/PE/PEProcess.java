@@ -74,7 +74,7 @@ public class PEProcess implements AutoCloseable {
         try(BufferedReader reader = process.inputReader()){
             String line;
             while((line = reader.readLine())!=null){
-                System.out.println(line);
+                System.out.println(line); //TODO: add entire log into an Event
 
                 if(line.startsWith("reading items for count ")){
                       currentItemCount = line.charAt(line.length() -1);
