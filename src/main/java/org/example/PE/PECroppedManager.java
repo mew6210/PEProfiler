@@ -36,7 +36,9 @@ public class PECroppedManager implements PEManager,AutoCloseable {
         List<Path> filesCollection = new ArrayList<>();
         try(DirectoryStream<Path> files = Files.newDirectoryStream(collection)){
             for(Path file: files){
-                filesCollection.add(file);
+                if(file.getFileName().toString().endsWith(".bmp")){
+                    filesCollection.add(file);
+                }
             }
         } catch(IOException ioe){
             throw new IllegalStateException("could not open collection: "+ collection,ioe);
