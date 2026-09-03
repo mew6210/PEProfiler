@@ -1,26 +1,31 @@
 package org.example;
 
+import org.example.Analysis.ReadDataAnalyzer;
 import org.example.PE.PECroppedManager;
 import org.example.PE.PEManager;
 import org.example.PE.PEProcess;
+import org.example.PE.ReadEvent;
 
-import java.awt.*;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Properties;
 
 public class Main {
     static void main() {
-
+        List<ReadEvent> data;
         try(PEManager manager =
                     new PECroppedManager(
                             new PEProcess(pathToPE()))
         ){
             manager.readCollection(1);
-            var data = manager.getData();
+            data = manager.getData();
         }
+        ReadDataAnalyzer analyzer = new ReadDataAnalyzer(data,1);
+        var targetData = analyzer.getTargetData();
+
 
     }
 
