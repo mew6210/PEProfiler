@@ -24,7 +24,7 @@ public class Main {
             data = manager.getData();
         }
         ReadDataAnalyzer analyzer = new ReadDataAnalyzer(data,1);
-        var targetData = analyzer.getTargetData();
+        analyzer.analyze();
 
 
     }

@@ -1,14 +1,13 @@
 package org.example.Analysis;
 
+import org.example.PE.EventTimestamp;
 import org.example.PE.ReadEvent;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
 
 public class ReadDataAnalyzer {
 
@@ -66,6 +65,16 @@ public class ReadDataAnalyzer {
         }
 
     }
-
+    public void analyze(){
+        Map<String, Integer> timestampMap = new TreeMap<>();
+        for(ReadEvent datum : data){
+            for(EventTimestamp stamp: datum.timestamps()){
+                timestampMap.put( //could be timestampMap.merge(...)
+                        stamp.eventName(),
+                        timestampMap.getOrDefault(stamp.eventName(),0)+ stamp.ElapsedMs()
+                );
+            }
+        }
+    }
 
 }
