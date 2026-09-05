@@ -98,6 +98,9 @@ public class ReadDataAnalyzer {
         }
         List<EventMatch> matches = getMatches();
 
+        int goodReadings = 0;
+        int badReadings = 0;
+        int badCountReadings = 0;
         for(EventMatch match : matches){
             if(match.read().getItemCount() != match.target().items().size()){
                 System.out.printf("Incorrect sizes of items read and items targeted - read.items.size(): %d, target.items.size(): %d, file affected: %s\n",
@@ -105,6 +108,7 @@ public class ReadDataAnalyzer {
                         match.target().items().size(),
                         match.target().fileName()
                 );
+                badCountReadings++;
                 continue;
             }
             List<String> unfoundItems = new ArrayList<>();
@@ -129,13 +133,11 @@ public class ReadDataAnalyzer {
             for(String readItem : readItems){
                 insights.add(new ItemReadMismatch(readItem,unfoundItems, Path.of(match.target().fileName())));
             }
-
-            //for(String unfoundItem : unfoundItems){
-            //    System.out.println("This item is in targetData but was not found" + unfoundItem + " File affected: " + match.target().fileName());
-            //}
-
+            if(readItems.isEmpty()) goodReadings++;
+            else badReadings ++;
 
         }
+        insights.add(new SummaryInsight(goodReadings,badReadings,badCountReadings));
 
     }
 
