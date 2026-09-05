@@ -16,7 +16,7 @@ public class ReadDataAnalyzer {
     private final List<ReadEvent> data;
     private final List<ReadTargetEvent> targetData;
     private Map<String,Integer> avgTimestampMap;
-
+    private final List<Insight> insights = new ArrayList<>();
     public ReadDataAnalyzer(List<ReadEvent> data,int collectionIndex){
         this.data = data;
         this.targetData = getCollectionTargetData(collectionIndex);
@@ -127,11 +127,12 @@ public class ReadDataAnalyzer {
             }
 
             for(String readItem : readItems){
-                System.out.println("This item is not in targetData but got read anyway: "+ readItem + " File affected: " + match.target().fileName());
+                insights.add(new ItemReadMismatch(readItem,unfoundItems, Path.of(match.target().fileName())));
             }
-            for(String unfoundItem : unfoundItems){
-                System.out.println("This item is in targetData but was not found" + unfoundItem + " File affected: " + match.target().fileName());
-            }
+
+            //for(String unfoundItem : unfoundItems){
+            //    System.out.println("This item is in targetData but was not found" + unfoundItem + " File affected: " + match.target().fileName());
+            //}
 
 
         }
