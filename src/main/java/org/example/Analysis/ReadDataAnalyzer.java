@@ -15,7 +15,6 @@ public class ReadDataAnalyzer {
 
     private final List<ReadEvent> data;
     private final List<ReadTargetEvent> targetData;
-    private Map<String,Integer> avgTimestampMap;
     private final List<Insight> insights = new ArrayList<>();
     public ReadDataAnalyzer(List<ReadEvent> data,int collectionIndex){
         this.data = data;
@@ -64,12 +63,13 @@ public class ReadDataAnalyzer {
 
         return List.of();
     }
-    public void analyze(){
-        this.avgTimestampMap = analyzeTimestamps();
+    public List<Insight> analyze(){
+        analyzeTimestamps();
         analyzeItems();
+        return insights;
     }
 
-    private Map<String,Integer> analyzeTimestamps(){
+    private void analyzeTimestamps(){
         Map<String,TimestampAggregate> timestampMap = new TreeMap<>();
         for(ReadEvent datum : data){
             for(EventTimestamp stamp: datum.timestamps()){
@@ -86,7 +86,7 @@ public class ReadDataAnalyzer {
             var val = entry.getValue();
             avgTimestampMap.put(entry.getKey(), val.aggregate()/val.count());
         }
-        return avgTimestampMap;
+        insights.add(new AverageTimestampsInsight(avgTimestampMap));
     }
     private void analyzeItems(){
 
