@@ -13,6 +13,7 @@ public class ReadDataAnalyzer {
 
     private final List<ReadEvent> data;
     private List<ReadTargetEvent> targetData;
+    private Map<String,Integer> avgTimestampMap;
 
     public ReadDataAnalyzer(List<ReadEvent> data,int collectionIndex){
         this.data = data;
@@ -66,15 +67,26 @@ public class ReadDataAnalyzer {
 
     }
     public void analyze(){
-        Map<String, Integer> timestampMap = new TreeMap<>();
+        this.avgTimestampMap = analyzeTimestamps();
+    }
+    private Map<String,Integer> analyzeTimestamps(){
+        Map<String,TimestampAggregate> timestampMap = new TreeMap<>();
         for(ReadEvent datum : data){
             for(EventTimestamp stamp: datum.timestamps()){
+
+                var current = timestampMap.getOrDefault(stamp.eventName(),new TimestampAggregate(0,0));
                 timestampMap.put( //could be timestampMap.merge(...)
                         stamp.eventName(),
-                        timestampMap.getOrDefault(stamp.eventName(),0)+ stamp.ElapsedMs()
+                        new TimestampAggregate(current.aggregate() + stamp.ElapsedMs(),current.count()+1)
                 );
             }
         }
+        Map<String,Integer> avgTimestampMap = new TreeMap<>();
+        for(var entry : timestampMap.entrySet()){
+            var val = entry.getValue();
+            avgTimestampMap.put(entry.getKey(), val.aggregate()/val.count());
+        }
+        return avgTimestampMap;
     }
 
 }
