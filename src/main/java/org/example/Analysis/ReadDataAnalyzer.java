@@ -8,23 +8,21 @@ import java.io.FileNotFoundException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class ReadDataAnalyzer {
 
     private final List<ReadEvent> data;
-    private List<ReadTargetEvent> targetData;
+    private final List<ReadTargetEvent> targetData;
     private Map<String,Integer> avgTimestampMap;
 
     public ReadDataAnalyzer(List<ReadEvent> data,int collectionIndex){
         this.data = data;
-        getCollectionTargetData(collectionIndex);
+        this.targetData = getCollectionTargetData(collectionIndex);
     }
 
-    public List<ReadTargetEvent> getTargetData(){
-        return targetData;
-    }
-
-    private void getCollectionTargetData(int collectionIndex){
+    private List<ReadTargetEvent> getCollectionTargetData(int collectionIndex){
 
         Path collection = Path.of("collections").resolve(Integer.toString(collectionIndex));
         if(!Files.isDirectory(collection)) throw new IllegalStateException("No such collection exists: "+collectionIndex);
@@ -40,7 +38,7 @@ public class ReadDataAnalyzer {
 
 
                 if(line.startsWith("file: ")){
-                    fileName = line.substring(6);
+                    fileName = line.substring(6)+".bmp";
                 }
 
                 if(line.startsWith("item")){
@@ -58,17 +56,19 @@ public class ReadDataAnalyzer {
                             !items.isEmpty())
                 targetEvents.add(new ReadTargetEvent(fileName,new ArrayList<>(items)));
 
-            this.targetData = targetEvents;
-
+            return targetEvents;
         } catch (FileNotFoundException e) {
             System.out.println("Could not find collection.txt in collection: "+ collectionIndex);
             e.printStackTrace();
         }
 
+        return List.of();
     }
     public void analyze(){
         this.avgTimestampMap = analyzeTimestamps();
+        analyzeItems();
     }
+
     private Map<String,Integer> analyzeTimestamps(){
         Map<String,TimestampAggregate> timestampMap = new TreeMap<>();
         for(ReadEvent datum : data){
@@ -87,6 +87,76 @@ public class ReadDataAnalyzer {
             avgTimestampMap.put(entry.getKey(), val.aggregate()/val.count());
         }
         return avgTimestampMap;
+    }
+    private void analyzeItems(){
+
+        if(data.size() != targetData.size()){
+            System.out.printf("Incorrect sizes of data to targetData - data.size(): %d, targetData.size(): %d\n",
+                    data.size(),
+                    targetData.size()
+            );
+        }
+        List<EventMatch> matches = getMatches();
+
+        for(EventMatch match : matches){
+            if(match.read().getItemCount() != match.target().items().size()){
+                System.out.printf("Incorrect sizes of items read and items targeted - read.items.size(): %d, target.items.size(): %d, file affected: %s\n",
+                        match.read().getItemCount(),
+                        match.target().items().size(),
+                        match.target().fileName()
+                );
+                continue;
+            }
+            List<String> unfoundItems = new ArrayList<>();
+            List<String> readItems = new ArrayList<>(match.read().getParsedItemsSatisfyingItemCount());
+
+            for(String item : match.target().items()){
+                int indexMatch = -1;
+                for(int i = 0;i<readItems.size();i++){
+                    if(item.equalsIgnoreCase(readItems.get(i))){
+                        indexMatch = i;
+                        break;
+                    }
+                }
+                if(indexMatch != -1){
+                    readItems.remove(indexMatch);
+                }
+                else {
+                    unfoundItems.add(item);
+                }
+            }
+
+            for(String readItem : readItems){
+                System.out.println("This item is not in targetData but got read anyway: "+ readItem + " File affected: " + match.target().fileName());
+            }
+            for(String unfoundItem : unfoundItems){
+                System.out.println("This item is in targetData but was not found" + unfoundItem + " File affected: " + match.target().fileName());
+            }
+
+
+        }
+
+    }
+
+    private List<EventMatch> getMatches(){
+        Map<String, ReadTargetEvent> targetsByFileName =
+                targetData.stream()
+                        .collect(Collectors.toMap(
+                                ReadTargetEvent::fileName,
+                                Function.identity()
+                        ));
+
+        return data.stream()
+                .map(event -> {
+                    String fileName = event.pathToFileRead().getFileName().toString();
+                    ReadTargetEvent target = targetsByFileName.get(fileName);
+
+                    return target != null
+                            ? new EventMatch(event,target)
+                            : null;
+                })
+                .filter(Objects::nonNull)
+                .toList();
     }
 
 }
