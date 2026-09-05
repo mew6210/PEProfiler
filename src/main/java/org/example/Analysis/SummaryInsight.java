@@ -1,9 +1,9 @@
 package org.example.Analysis;
 
 public record SummaryInsight(
-        int correctReadings,
-        int badReadings,
-        int badCountReadings
+        int goodScreenshotReadings,
+        int badScreenshotReadings,
+        int badScreenshotItemCountReadings
 ) implements Insight {
     @Override
     public Severity severity() {

@@ -98,17 +98,18 @@ public class ReadDataAnalyzer {
         }
         List<EventMatch> matches = getMatches();
 
-        int goodReadings = 0;
-        int badReadings = 0;
-        int badCountReadings = 0;
+        int goodScreenshotReadings = 0;
+        int badScreenshotReadings = 0;
+        int badScreenshotItemCountReadings = 0;
         for(EventMatch match : matches){
+            Path fileName = Path.of(match.target().fileName());
             if(match.read().getItemCount() != match.target().items().size()){
-                System.out.printf("Incorrect sizes of items read and items targeted - read.items.size(): %d, target.items.size(): %d, file affected: %s\n",
+                insights.add(new ItemCountMismatch(
                         match.read().getItemCount(),
                         match.target().items().size(),
-                        match.target().fileName()
+                        fileName)
                 );
-                badCountReadings++;
+                badScreenshotItemCountReadings++;
                 continue;
             }
             List<String> unfoundItems = new ArrayList<>();
@@ -131,13 +132,13 @@ public class ReadDataAnalyzer {
             }
 
             for(String readItem : readItems){
-                insights.add(new ItemReadMismatch(readItem,unfoundItems, Path.of(match.target().fileName())));
+                insights.add(new ItemReadMismatch(readItem,unfoundItems, fileName));
             }
-            if(readItems.isEmpty()) goodReadings++;
-            else badReadings ++;
+            if(readItems.isEmpty()) goodScreenshotReadings++;
+            else badScreenshotReadings ++;
 
         }
-        insights.add(new SummaryInsight(goodReadings,badReadings,badCountReadings));
+        insights.add(new SummaryInsight(goodScreenshotReadings,badScreenshotReadings,badScreenshotItemCountReadings));
 
     }
 
