@@ -2,7 +2,7 @@ package org.example.Analysis;
 
 import java.nio.file.Path;
 
-public record ItemCountMismatch(
+public record ItemCountMismatchInsight(
         int estimatedCount,
         int correctCount,
         Path fileName

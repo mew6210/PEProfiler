@@ -104,7 +104,7 @@ public class ReadDataAnalyzer {
         for(EventMatch match : matches){
             Path fileName = Path.of(match.target().fileName());
             if(match.read().getItemCount() != match.target().items().size()){
-                insights.add(new ItemCountMismatch(
+                insights.add(new ItemCountMismatchInsight(
                         match.read().getItemCount(),
                         match.target().items().size(),
                         fileName)
@@ -132,7 +132,7 @@ public class ReadDataAnalyzer {
             }
 
             for(String readItem : readItems){
-                insights.add(new ItemReadMismatch(readItem,unfoundItems, fileName));
+                insights.add(new ItemReadMismatchInsight(readItem,unfoundItems, fileName));
             }
             if(readItems.isEmpty()) goodScreenshotReadings++;
             else badScreenshotReadings ++;
