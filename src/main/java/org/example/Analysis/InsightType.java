@@ -1,0 +1,8 @@
+package org.example.Analysis;
+
+public enum InsightType {
+    ItemReadMismatch,
+    AverageTimestamps,
+    Summary,
+    ItemCountMismatch
+}
