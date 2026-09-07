@@ -5,6 +5,8 @@ import org.example.PE.PECroppedManager;
 import org.example.PE.PEManager;
 import org.example.PE.PEProcess;
 import org.example.PE.ReadEvent;
+import org.example.presentation.InsightPresenter;
+import org.example.presentation.MarkDownPresenter;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -25,6 +27,8 @@ public class Main {
         }
         ReadDataAnalyzer analyzer = new ReadDataAnalyzer(data,1);
         var insights = analyzer.analyze();
+        InsightPresenter presenter = new MarkDownPresenter();
+        presenter.present(insights);
 
     }
 
