@@ -5,8 +5,11 @@ import org.example.Analysis.*;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
+import java.util.stream.Collectors;
 
 public class MarkDownPresenter implements InsightPresenter{
     static final String markDownFileName = "report.md";
@@ -48,6 +51,56 @@ public class MarkDownPresenter implements InsightPresenter{
             List<Insight> itemCountMismatchInsights = insights.stream().filter(insight -> insight instanceof ItemCountMismatchInsight).toList();
             List<Insight> itemReadMismatchInsights = insights.stream().filter(insight -> insight instanceof ItemReadMismatchInsight).toList();
 
+            writeToMdFileItemCountMismatchInsights(itemCountMismatchInsights,mdFileWriter);
+            writeToMdFileItemReadMismatchInsights(itemReadMismatchInsights,mdFileWriter);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+    }
+
+    private void writeToMdFileItemReadMismatchInsights(List<Insight> itemReadMismatchInsights, FileWriter mdFileWriter) {
+
+        Map<Path,List<ItemReadMismatchInsight>> insightsGroupedByFilename =
+                itemReadMismatchInsights
+                .stream()
+                .map(ItemReadMismatchInsight.class::cast)
+                .collect(Collectors.groupingBy(
+                        ItemReadMismatchInsight::fileName,
+                        TreeMap::new,
+                        Collectors.toList()));
+
+        try {
+            mdFileWriter.write("## Item read mismatches: <br>\n");
+            for(var entry: insightsGroupedByFilename.entrySet()){
+                mdFileWriter.write("### "+entry.getKey().toString()+": <br>\n");
+                for(var mismatch: entry.getValue()){
+                    mdFileWriter.write(" - **Read:** `"+mismatch.readItem()+"`\n\t - **Possible options:** `"+mismatch.getPrettyPossibleMatches() + "`\n");
+                }
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+
+    }
+
+    private void writeToMdFileItemCountMismatchInsights(List<Insight> itemCountMismatchInsights, FileWriter mdFileWriter) {
+
+        List<ItemCountMismatchInsight> itemCountMismatchInsightsCastedList = itemCountMismatchInsights.
+                stream().
+                map(ItemCountMismatchInsight.class::cast).
+                toList();
+        //Map<Path, List<ItemCountMismatchInsight>> groupedMap = itemCountMismatchInsightsCastedList.stream().collect(Collectors.groupingBy(ItemCountMismatchInsight::fileName));
+
+        try {
+            mdFileWriter.write("<br><br>\n");
+            mdFileWriter.write("## Item count mismatches: <br>\n");
+            for(var itemCountMismatchInsight : itemCountMismatchInsightsCastedList){
+                    mdFileWriter.write(" - "+"Estimated: "+itemCountMismatchInsight.estimatedCount()
+                            +" Correct count: "+ itemCountMismatchInsight.correctCount()
+                            + " : "+itemCountMismatchInsight.fileName()+ "<br>\n");
+            }
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
