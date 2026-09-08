@@ -18,4 +18,8 @@ public record ItemReadMismatchInsight(String readItem, List<String> possibleMatc
     public InsightType type() {
         return InsightType.ItemReadMismatch;
     }
+
+    public String getPrettyPossibleMatches(){
+        return "[" + String.join(",", possibleMatches) + "]";
+    }
 }
