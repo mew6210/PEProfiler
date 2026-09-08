@@ -74,6 +74,7 @@ public class MarkDownPresenter implements InsightPresenter{
             mdFileWriter.write("## Item read mismatches: <br>\n");
             for(var entry: insightsGroupedByFilename.entrySet()){
                 mdFileWriter.write("### "+entry.getKey().toString()+": <br>\n");
+                mdFileWriter.write("!["+entry.getKey()+"](collections/1/"+entry.getKey()+")\n");
                 for(var mismatch: entry.getValue()){
                     mdFileWriter.write(" - **Read:** `"+mismatch.readItem()+"`\n\t - **Possible options:** `"+mismatch.getPrettyPossibleMatches() + "`\n");
                 }
