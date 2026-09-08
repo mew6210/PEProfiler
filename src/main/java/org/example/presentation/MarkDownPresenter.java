@@ -92,15 +92,16 @@ public class MarkDownPresenter implements InsightPresenter{
                 stream().
                 map(ItemCountMismatchInsight.class::cast).
                 toList();
-        //Map<Path, List<ItemCountMismatchInsight>> groupedMap = itemCountMismatchInsightsCastedList.stream().collect(Collectors.groupingBy(ItemCountMismatchInsight::fileName));
 
         try {
             mdFileWriter.write("<br><br>\n");
             mdFileWriter.write("## Item count mismatches: <br>\n");
             for(var itemCountMismatchInsight : itemCountMismatchInsightsCastedList){
-                    mdFileWriter.write(" - "+"Estimated: "+itemCountMismatchInsight.estimatedCount()
-                            +" Correct count: "+ itemCountMismatchInsight.correctCount()
-                            + " : "+itemCountMismatchInsight.fileName()+ "<br>\n");
+                mdFileWriter.write("### File: "+itemCountMismatchInsight.fileName()+"\n");
+                mdFileWriter.write("!["+itemCountMismatchInsight.fileName()+"](collections/1/"+itemCountMismatchInsight.fileName()+")\n");
+                mdFileWriter.write("- "+"Estimated: "+itemCountMismatchInsight.estimatedCount()
+                                +" Correct: "+ itemCountMismatchInsight.correctCount() + "<br>\n");
+
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
