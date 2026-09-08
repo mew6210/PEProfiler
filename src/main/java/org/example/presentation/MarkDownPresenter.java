@@ -127,10 +127,22 @@ public class MarkDownPresenter implements InsightPresenter{
         int allRuns = smInsight.goodScreenshotReadings() +
                 smInsight.badScreenshotReadings() +
                 smInsight.badScreenshotItemCountReadings();
+        String goodPercentage = String.format("%.2f", (double)smInsight.goodScreenshotReadings()/allRuns *100);
+        String badPercentage = String.format("%.2f", (double)smInsight.badScreenshotReadings()/allRuns *100);
+        String badCountPercentage = String.format("%.2f", (double)smInsight.badScreenshotItemCountReadings()/allRuns *100);
+
         try {
-            mdFileWriter.write("Correct readings: "+ smInsight.goodScreenshotReadings() + "/"+ allRuns+"<br>");
-            mdFileWriter.write("Bad screenshot readings: "+ smInsight.badScreenshotReadings()+ "/"+allRuns+"<br>");
-            mdFileWriter.write("Bad screenshot item count readings: "+ smInsight.badScreenshotItemCountReadings()+ "/"+allRuns+"<br><br>\n");
+            mdFileWriter.write("Correct readings: "+ smInsight.goodScreenshotReadings()
+                    + "/"+ allRuns
+                    +"("+goodPercentage+"%) <br>");
+
+            mdFileWriter.write("Bad screenshot readings: "+ smInsight.badScreenshotReadings()
+                    + "/"+allRuns
+                    +"("+badPercentage+"%) <br>");
+            mdFileWriter.write("Bad screenshot item count readings: "
+                    + smInsight.badScreenshotItemCountReadings()
+                    + "/"+allRuns
+                    +"("+badCountPercentage+"%)"+"<br><br>\n");
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
