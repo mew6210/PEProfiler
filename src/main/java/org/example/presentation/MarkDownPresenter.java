@@ -2,7 +2,6 @@ package org.example.presentation;
 
 import org.example.Analysis.*;
 
-import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -16,50 +15,48 @@ public class MarkDownPresenter implements InsightPresenter{
 
     @Override
     public void present(List<Insight> insights) {
-        File mdFile = new File(markDownFileName);
-        try {
-            if(mdFile.createNewFile()){
-                writeToMdFile(insights);
-            }
-            else{
-                //TODO: prompt user what to do
-            }
-
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        try{
+            writeToMdFile(insights);
         }
-
-
+        catch(IOException ioex){
+            printCouldNotWriteToFileError(ioex);
+        }
     }
-    private void writeToMdFile(List<Insight> insights){
+
+    private void writeToMdFile(List<Insight> insights) throws IOException {
 
         try (FileWriter mdFileWriter = new FileWriter(markDownFileName)){
 
             mdFileWriter.write("# Platinum Eyes Performance Report\n\n## Summary:\n");
-            insights.forEach(insight -> {
-                        if(insight instanceof SummaryInsight){
-                            writeToMdFileSummaryInsight(insight,mdFileWriter);
-                        }
-                    });
-            insights.forEach(insight -> {
-                if(insight instanceof AverageTimestampsInsight){
-                    writeToMdFileAverageTimestampsInsight(insight,mdFileWriter);
+            for (Insight insight1 : insights) {
+                if (insight1 instanceof SummaryInsight) {
+                    writeToMdFileSummaryInsight(insight1, mdFileWriter);
                 }
+            }
 
-            });
+            for (Insight insight1 : insights) {
+                if (insight1 instanceof AverageTimestampsInsight) {
+                    writeToMdFileAverageTimestampsInsight(insight1, mdFileWriter);
+                }
+            }
 
-            List<Insight> itemCountMismatchInsights = insights.stream().filter(insight -> insight instanceof ItemCountMismatchInsight).toList();
-            List<Insight> itemReadMismatchInsights = insights.stream().filter(insight -> insight instanceof ItemReadMismatchInsight).toList();
+            List<Insight> itemCountMismatchInsights = insights
+                    .stream()
+                    .filter(insight -> insight instanceof ItemCountMismatchInsight)
+                    .toList();
+
+            List<Insight> itemReadMismatchInsights = insights
+                    .stream()
+                    .filter(insight -> insight instanceof ItemReadMismatchInsight)
+                    .toList();
 
             writeToMdFileItemCountMismatchInsights(itemCountMismatchInsights,mdFileWriter);
             writeToMdFileItemReadMismatchInsights(itemReadMismatchInsights,mdFileWriter);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
         }
 
     }
 
-    private void writeToMdFileItemReadMismatchInsights(List<Insight> itemReadMismatchInsights, FileWriter mdFileWriter) {
+    private void writeToMdFileItemReadMismatchInsights(List<Insight> itemReadMismatchInsights, FileWriter mdFileWriter) throws IOException {
 
         Map<Path,List<ItemReadMismatchInsight>> insightsGroupedByFilename =
                 itemReadMismatchInsights
@@ -70,59 +67,46 @@ public class MarkDownPresenter implements InsightPresenter{
                         TreeMap::new,
                         Collectors.toList()));
 
-        try {
-            mdFileWriter.write("## Item read mismatches: <br>\n");
-            for(var entry: insightsGroupedByFilename.entrySet()){
-                mdFileWriter.write("### "+entry.getKey().toString()+": <br>\n");
-                mdFileWriter.write("!["+entry.getKey()+"](collections/1/"+entry.getKey()+")\n");
-                for(var mismatch: entry.getValue()){
-                    mdFileWriter.write(" - **Read:** `"+mismatch.readItem()+"`\n\t - **Possible options:** `"+mismatch.getPrettyPossibleMatches() + "`\n");
-                }
+        mdFileWriter.write("## Item read mismatches: <br>\n");
+        for(var entry: insightsGroupedByFilename.entrySet()){
+            mdFileWriter.write("### "+entry.getKey().toString()+": <br>\n");
+            mdFileWriter.write("!["+entry.getKey()+"](collections/1/"+entry.getKey()+")\n");
+            for(var mismatch: entry.getValue()){
+                mdFileWriter.write(" - **Read:** `"+mismatch.readItem()+"`\n\t - **Possible options:** `"+mismatch.getPrettyPossibleMatches() + "`\n");
             }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
         }
 
 
     }
 
-    private void writeToMdFileItemCountMismatchInsights(List<Insight> itemCountMismatchInsights, FileWriter mdFileWriter) {
+    private void writeToMdFileItemCountMismatchInsights(List<Insight> itemCountMismatchInsights, FileWriter mdFileWriter) throws IOException {
 
         List<ItemCountMismatchInsight> itemCountMismatchInsightsCastedList = itemCountMismatchInsights.
                 stream().
                 map(ItemCountMismatchInsight.class::cast).
                 toList();
 
-        try {
-            mdFileWriter.write("<br><br>\n");
-            mdFileWriter.write("## Item count mismatches: <br>\n");
-            for(var itemCountMismatchInsight : itemCountMismatchInsightsCastedList){
-                mdFileWriter.write("### File: "+itemCountMismatchInsight.fileName()+"\n");
-                mdFileWriter.write("!["+itemCountMismatchInsight.fileName()+"](collections/1/"+itemCountMismatchInsight.fileName()+")\n");
-                mdFileWriter.write("- "+"Estimated: "+itemCountMismatchInsight.estimatedCount()
-                                +" Correct: "+ itemCountMismatchInsight.correctCount() + "<br>\n");
-
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        mdFileWriter.write("<br><br>\n");
+        mdFileWriter.write("## Item count mismatches: <br>\n");
+        for(var itemCountMismatchInsight : itemCountMismatchInsightsCastedList){
+            mdFileWriter.write("### File: "+itemCountMismatchInsight.fileName()+"\n");
+            mdFileWriter.write("!["+itemCountMismatchInsight.fileName()+"](collections/1/"+itemCountMismatchInsight.fileName()+")\n");
+            mdFileWriter.write("- "+"Estimated: "+itemCountMismatchInsight.estimatedCount()
+                            +" Correct: "+ itemCountMismatchInsight.correctCount() + "<br>\n");
         }
 
     }
 
-    private void writeToMdFileAverageTimestampsInsight(Insight insight, FileWriter mdFileWriter) {
+    private void writeToMdFileAverageTimestampsInsight(Insight insight, FileWriter mdFileWriter) throws IOException {
         AverageTimestampsInsight avtmInsight = (AverageTimestampsInsight) insight;
-        try {
-            mdFileWriter.write("## Average time spent on an action:\n");
-            for(Map.Entry<String,Integer> entry : avtmInsight.timestamps().entrySet()){
-                mdFileWriter.write("- **"+entry.getKey()+"**: "+entry.getValue()+"ms\n");
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        mdFileWriter.write("## Average time spent on an action:\n");
+        for(Map.Entry<String,Integer> entry : avtmInsight.timestamps().entrySet()){
+            mdFileWriter.write("- **"+entry.getKey()+"**: "+entry.getValue()+"ms\n");
         }
 
     }
 
-    private void writeToMdFileSummaryInsight(Insight insight, FileWriter mdFileWriter){
+    private void writeToMdFileSummaryInsight(Insight insight, FileWriter mdFileWriter) throws IOException {
         SummaryInsight smInsight = (SummaryInsight) insight;
         int allRuns = smInsight.goodScreenshotReadings() +
                 smInsight.badScreenshotReadings() +
@@ -131,21 +115,21 @@ public class MarkDownPresenter implements InsightPresenter{
         String badPercentage = String.format("%.2f", (double)smInsight.badScreenshotReadings()/allRuns *100);
         String badCountPercentage = String.format("%.2f", (double)smInsight.badScreenshotItemCountReadings()/allRuns *100);
 
-        try {
-            mdFileWriter.write("Correct readings: "+ smInsight.goodScreenshotReadings()
-                    + "/"+ allRuns
-                    +"("+goodPercentage+"%) <br>");
+        mdFileWriter.write("Correct readings: "+ smInsight.goodScreenshotReadings()
+                + "/"+ allRuns
+                +"("+goodPercentage+"%) <br>");
 
-            mdFileWriter.write("Bad screenshot readings: "+ smInsight.badScreenshotReadings()
-                    + "/"+allRuns
-                    +"("+badPercentage+"%) <br>");
-            mdFileWriter.write("Bad screenshot item count readings: "
-                    + smInsight.badScreenshotItemCountReadings()
-                    + "/"+allRuns
-                    +"("+badCountPercentage+"%)"+"<br><br>\n");
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        mdFileWriter.write("Bad screenshot readings: "+ smInsight.badScreenshotReadings()
+                + "/"+allRuns
+                +"("+badPercentage+"%) <br>");
+        mdFileWriter.write("Bad screenshot item count readings: "
+                + smInsight.badScreenshotItemCountReadings()
+                + "/"+allRuns
+                +"("+badCountPercentage+"%)"+"<br><br>\n");
+    }
+
+    private void printCouldNotWriteToFileError(IOException ioex){
+        System.out.println("Could not write to "+ markDownFileName+", error: "+ioex);
     }
 
 }
