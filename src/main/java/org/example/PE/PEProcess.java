@@ -10,10 +10,12 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Scanner;
 
 public class PEProcess implements AutoCloseable {
     public final Path pathToPE;
     private Process process;
+    private int keyCodePreviousScreenshot;
     private List<ReadEvent> events = Collections.synchronizedList(new ArrayList<>());
     private volatile Path currentlyReadFile;
     private volatile boolean isReadyToRead = false;
@@ -28,6 +30,7 @@ public class PEProcess implements AutoCloseable {
         if(!Files.isRegularFile(this.pathToPE)) {
             throw new IllegalArgumentException("Executable does not exist at this path: " + this.pathToPE);
         }
+        initKeycodes();
     }
 
     public void open() throws IOException {
@@ -58,10 +61,10 @@ public class PEProcess implements AutoCloseable {
         this.currentlyReadFile = expectedFile;
         Robot robot = new Robot();
         robot.keyPress(KeyEvent.VK_ALT);
-        robot.keyPress(KeyEvent.VK_X);
+        robot.keyPress(keyCodePreviousScreenshot);
 
         robot.keyRelease(KeyEvent.VK_ALT);
-        robot.keyRelease(KeyEvent.VK_X);
+        robot.keyRelease(keyCodePreviousScreenshot);
     }
 
     void listenToProcessOutput(){
@@ -127,5 +130,41 @@ public class PEProcess implements AutoCloseable {
 
     public void addErrorEvent(Path screenshot){
         events.add(new ReadEvent(-1,null,null,screenshot));
+    }
+
+    private void initKeycodes(){
+        assert pathToPE != null;
+
+        if(!Files.exists(pathToPE.getParent().resolve("tool_config.txt"))){
+            keyCodePreviousScreenshot = KeyEvent.VK_X;
+            return;
+        }
+
+        int keycodeFromToolConfig = getPreviousScreenshotKeyCodeFromToolConfig(pathToPE.getParent().resolve("tool_config.txt"));
+        if(keycodeFromToolConfig == -1){
+            keyCodePreviousScreenshot = KeyEvent.VK_X;
+            return;
+        }
+
+        keyCodePreviousScreenshot = KeyEvent.getExtendedKeyCodeForChar(keycodeFromToolConfig);
+    }
+
+    private int getPreviousScreenshotKeyCodeFromToolConfig(Path pathToToolConfig) {
+
+        Scanner scanner;
+        try {
+            scanner = new Scanner(pathToToolConfig);
+        } catch (IOException e) {
+            return -1;
+        }
+
+        while(scanner.hasNextLine()){
+            String line = scanner.nextLine();
+
+            if(line.startsWith("keyBind_ReadPreviousItems:")){
+                return line.charAt(27);
+            }
+        }
+        return -1;
     }
 }
