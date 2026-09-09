@@ -29,11 +29,9 @@ public class Main {
         var insights = analyzer.analyze();
         InsightPresenter presenter = new MarkDownPresenter();
         presenter.present(insights);
-
     }
 
     static String pathToPE(){
-
         Properties config = new Properties();
         try (FileInputStream input = new FileInputStream("config.properties")) {
             config.load(input);

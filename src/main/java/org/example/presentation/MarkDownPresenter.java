@@ -2,7 +2,6 @@ package org.example.presentation;
 
 import org.example.Analysis.*;
 
-import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -16,21 +15,9 @@ public class MarkDownPresenter implements InsightPresenter{
 
     @Override
     public void present(List<Insight> insights) {
-        File mdFile = new File(markDownFileName);
-        try {
-            if(mdFile.createNewFile()){
-                writeToMdFile(insights);
-            }
-            else{
-                //TODO: prompt user what to do
-            }
-
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
-
+        writeToMdFile(insights);
     }
+
     private void writeToMdFile(List<Insight> insights){
 
         try (FileWriter mdFileWriter = new FileWriter(markDownFileName)){
@@ -45,11 +32,17 @@ public class MarkDownPresenter implements InsightPresenter{
                 if(insight instanceof AverageTimestampsInsight){
                     writeToMdFileAverageTimestampsInsight(insight,mdFileWriter);
                 }
-
             });
 
-            List<Insight> itemCountMismatchInsights = insights.stream().filter(insight -> insight instanceof ItemCountMismatchInsight).toList();
-            List<Insight> itemReadMismatchInsights = insights.stream().filter(insight -> insight instanceof ItemReadMismatchInsight).toList();
+            List<Insight> itemCountMismatchInsights = insights
+                    .stream()
+                    .filter(insight -> insight instanceof ItemCountMismatchInsight)
+                    .toList();
+
+            List<Insight> itemReadMismatchInsights = insights
+                    .stream()
+                    .filter(insight -> insight instanceof ItemReadMismatchInsight)
+                    .toList();
 
             writeToMdFileItemCountMismatchInsights(itemCountMismatchInsights,mdFileWriter);
             writeToMdFileItemReadMismatchInsights(itemReadMismatchInsights,mdFileWriter);
