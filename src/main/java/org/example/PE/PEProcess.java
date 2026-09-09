@@ -44,7 +44,6 @@ public class PEProcess implements AutoCloseable {
         process = pb.start();
         outputThread.start();
         System.out.println("Process opened");
-        isReadyToRead = true;
     }
 
     @Override
