@@ -7,6 +7,7 @@ import org.example.PE.PEProcess;
 import org.example.PE.ReadEvent;
 import org.example.presentation.InsightPresenter;
 import org.example.presentation.MarkDownPresenter;
+import org.example.userConfig.Config;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -16,16 +17,17 @@ import java.util.List;
 import java.util.Properties;
 
 public class Main {
-    static void main() {
+    static void main(String... args) {
+        Config userConfig = new Config(args);
         List<ReadEvent> data;
         try(PEManager manager =
                     new PECroppedManager(
                             new PEProcess(pathToPE()))
         ){
-            manager.readCollection(1);
+            manager.readCollection(userConfig.getCollectionIndex());
             data = manager.getData();
         }
-        ReadDataAnalyzer analyzer = new ReadDataAnalyzer(data,1);
+        ReadDataAnalyzer analyzer = new ReadDataAnalyzer(data,userConfig.getCollectionIndex());
         var insights = analyzer.analyze();
         InsightPresenter presenter = new MarkDownPresenter();
         presenter.present(insights);
