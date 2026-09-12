@@ -20,9 +20,9 @@ public class PEProcess implements AutoCloseable {
     private volatile Path currentlyReadFile;
     private volatile boolean isReadyToRead = false;
 
-    public PEProcess(String PEPath){
+    public PEProcess(Path PEPath){
         try{
-            this.pathToPE=Path.of(PEPath);
+            this.pathToPE=PEPath;
         } catch (RuntimeException e) {
             throw new IllegalArgumentException("Invalid path: "+PEPath);
         }
