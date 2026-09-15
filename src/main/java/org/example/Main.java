@@ -6,7 +6,7 @@ import org.example.PE.PEManager;
 import org.example.PE.PEProcess;
 import org.example.PE.ReadEvent;
 import org.example.presentation.InsightPresenter;
-import org.example.presentation.MarkDownPresenter;
+import org.example.presentation.InsightPresenterFactory;
 import org.example.userConfig.Config;
 
 import java.util.List;
@@ -24,7 +24,7 @@ public class Main {
         }
         ReadDataAnalyzer analyzer = new ReadDataAnalyzer(data,userConfig.getCollectionIndex());
         var insights = analyzer.analyze();
-        InsightPresenter presenter = new MarkDownPresenter();
+        InsightPresenter presenter = InsightPresenterFactory.create(userConfig.getInsightPresenter());
         presenter.present(insights);
     }
 
