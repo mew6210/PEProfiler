@@ -2,6 +2,7 @@ package org.example.presentation;
 
 import org.example.Analysis.AverageTimestampsInsight;
 import org.example.Analysis.Insight;
+import org.example.Analysis.ItemReadMismatchInsight;
 import org.example.Analysis.SummaryInsight;
 
 import java.io.FileWriter;
@@ -35,11 +36,36 @@ public class JsonPresenter implements InsightPresenter {
                     writeToJsonFileTimestamps(insight,writer);
                 }
             }
+            List<ItemReadMismatchInsight> itemReadMismatchInsightList = insights.
+                    stream().
+                    filter(insight -> insight instanceof ItemReadMismatchInsight).
+                    map(insight -> (ItemReadMismatchInsight) insight).
+                    toList();
+
+            writeToJsonFileItemReadMismatchInsights(itemReadMismatchInsightList,writer);
 
 
 
             writer.write("\n}\n");
         }
+    }
+
+    //TODO: make it grouped by filename
+    private void writeToJsonFileItemReadMismatchInsights(List<ItemReadMismatchInsight> itemReadMismatchInsightList, FileWriter writer) throws IOException {
+        Iterator<ItemReadMismatchInsight> iterator = itemReadMismatchInsightList.iterator();
+        writer.write("\"Bad reads\": {\n");
+        while(iterator.hasNext()){
+            var mismatch = iterator.next();
+
+            if(iterator.hasNext()){
+                writer.write(",");
+            }
+            writer.write("\n");
+
+        }
+
+
+        writer.write("\n}\n");
     }
 
     private void writeToJsonFileTimestamps(Insight timestamps, FileWriter writer) throws IOException {
