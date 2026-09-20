@@ -53,19 +53,37 @@ public class JsonPresenter implements InsightPresenter {
     //TODO: make it grouped by filename
     private void writeToJsonFileItemReadMismatchInsights(List<ItemReadMismatchInsight> itemReadMismatchInsightList, FileWriter writer) throws IOException {
         Iterator<ItemReadMismatchInsight> iterator = itemReadMismatchInsightList.iterator();
-        writer.write("\"Bad reads\": {\n");
+        writer.write("\"Bad reads\": [\n");
         while(iterator.hasNext()){
+            writer.write("{");
             var mismatch = iterator.next();
+            String possibleMatches = prettyBadReadNameToJsonElement(mismatch.getPrettyPossibleMatches());
+            writer.write("\"Read\": \""+mismatch.readItem() +"\","+" \"Possible items\": "+ possibleMatches + ", \"Filename\": \""+mismatch.fileName()+"\"");
 
+            writer.write("}");
             if(iterator.hasNext()){
                 writer.write(",");
             }
             writer.write("\n");
-
         }
 
 
-        writer.write("\n}\n");
+        writer.write("]\n");
+    }
+
+    //converts a string "[itemName1,itemName2,...]" to a string "[\"itemName1\",\"itemName2\",...]"
+    private String prettyBadReadNameToJsonElement(String s){
+        if (s == null || s.length() < 2) {
+            return s;
+        }
+
+        String content = s.substring(1, s.length() - 1);
+
+        if (content.isEmpty()) {
+            return "[]";
+        }
+
+        return "[\"" + content.replace(",", "\",\"") + "\"]";
     }
 
     private void writeToJsonFileTimestamps(Insight timestamps, FileWriter writer) throws IOException {
@@ -82,7 +100,7 @@ public class JsonPresenter implements InsightPresenter {
             writer.write("\n");
         }
 
-        writer.write("\t}\n");
+        writer.write("\t},\n");
     }
 
     private void writeToJsonFileSummary(Insight summary, FileWriter writer) throws IOException{
