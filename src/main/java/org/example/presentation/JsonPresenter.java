@@ -1,9 +1,6 @@
 package org.example.presentation;
 
-import org.example.Analysis.AverageTimestampsInsight;
-import org.example.Analysis.Insight;
-import org.example.Analysis.ItemReadMismatchInsight;
-import org.example.Analysis.SummaryInsight;
+import org.example.Analysis.*;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -44,10 +41,34 @@ public class JsonPresenter implements InsightPresenter {
 
             writeToJsonFileItemReadMismatchInsights(itemReadMismatchInsightList,writer);
 
-
+            List<ItemCountMismatchInsight> itemCountMismatchInsightList = insights.
+                    stream().
+                    filter(insight -> insight instanceof ItemCountMismatchInsight).
+                    map(insight -> (ItemCountMismatchInsight) insight).
+                    toList();
+            writeToJsonFileItemCountMismatchInsights(itemCountMismatchInsightList,writer);
 
             writer.write("\n}\n");
         }
+    }
+
+    private void writeToJsonFileItemCountMismatchInsights(List<ItemCountMismatchInsight> itemCountMismatchInsightList, FileWriter writer) throws IOException {
+        Iterator<ItemCountMismatchInsight> iterator = itemCountMismatchInsightList.iterator();
+        writer.write("\"Bad count reads\": [\n");
+        while(iterator.hasNext()){
+            writer.write("\t{");
+            var mismatch = iterator.next();
+            writer.write("\"Read count\": "+mismatch.estimatedCount() +","+" \"Correct count\": "+ mismatch.correctCount() + ", \"Filename\": \""+mismatch.fileName()+"\"");
+
+            writer.write("}");
+            if(iterator.hasNext()){
+                writer.write(",");
+            }
+            writer.write("\n");
+        }
+
+
+        writer.write("]\n");
     }
 
     //TODO: make it grouped by filename
@@ -55,7 +76,7 @@ public class JsonPresenter implements InsightPresenter {
         Iterator<ItemReadMismatchInsight> iterator = itemReadMismatchInsightList.iterator();
         writer.write("\"Bad reads\": [\n");
         while(iterator.hasNext()){
-            writer.write("{");
+            writer.write("\t{");
             var mismatch = iterator.next();
             String possibleMatches = prettyBadReadNameToJsonElement(mismatch.getPrettyPossibleMatches());
             writer.write("\"Read\": \""+mismatch.readItem() +"\","+" \"Possible items\": "+ possibleMatches + ", \"Filename\": \""+mismatch.fileName()+"\"");
@@ -68,7 +89,7 @@ public class JsonPresenter implements InsightPresenter {
         }
 
 
-        writer.write("]\n");
+        writer.write("],\n");
     }
 
     //converts a string "[itemName1,itemName2,...]" to a string "[\"itemName1\",\"itemName2\",...]"
