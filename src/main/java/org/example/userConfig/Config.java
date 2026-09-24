@@ -66,6 +66,7 @@ public class Config {
     private void setInsightPresenterType(String value) throws IllegalArgumentException {
         switch(value){
             case "markdown" -> this.InsightPresenter = InsightPresenterType.MarkDown;
+            case "json" -> this.InsightPresenter = InsightPresenterType.Json;
             default -> throw new IllegalArgumentException("'"+value+"' is not a valid report type");
         }
     }
